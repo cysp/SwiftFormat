@@ -157,9 +157,10 @@ func printHelp(as type: CLI.OutputType) {
 }
 
 func timeEvent(block: () throws -> Void) rethrows -> TimeInterval {
-    let start = CFAbsoluteTimeGetCurrent()
+//    let start = CFAbsoluteTimeGetCurrent()
     try block()
-    return CFAbsoluteTimeGetCurrent() - start
+//    return CFAbsoluteTimeGetCurrent() - start
+    return 0
 }
 
 private func formatTime(_ time: TimeInterval) -> String {
