@@ -29,7 +29,6 @@
 //  SOFTWARE.
 //
 
-import Darwin.POSIX
 import Foundation
 #if SWIFT_PACKAGE
     import SwiftFormat
