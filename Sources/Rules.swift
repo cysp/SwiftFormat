@@ -33,42 +33,98 @@ import Foundation
 
 public typealias FormatRule = (Formatter) -> Void
 
-public class FormatRules: NSObject {
-    private override init() {}
+public class FormatRules {
+//    private override init() {}
 
     /// A Dictionary of rules by name
     public static let byName: [String: FormatRule] = {
-        var rules = [String: FormatRule]()
-        var numberOfMethods: CUnsignedInt = 0
-        let methods = class_copyMethodList(object_getClass(FormatRules.self), &numberOfMethods)!
-        for i in 0 ..< Int(numberOfMethods) {
-            let selector: Selector = method_getName(methods[i])
-            let name = String(describing: selector)
-            if name.hasSuffix(":") {
-                let name = String(name.dropLast())
-                rules[name] = { formatter in
-                    formatter.currentRule = name
-                    FormatRules.perform(selector, with: formatter)
-                    formatter.currentRule = nil
-                }
-            }
-        }
+        var rules: [String: FormatRule] = [
+            "spaceAroundParens": FormatRules.spaceAroundParens,
+            "spaceInsideParens": FormatRules.spaceInsideParens,
+            "spaceAroundBrackets": FormatRules.spaceAroundBrackets,
+            "spaceInsideBrackets": FormatRules.spaceInsideBrackets,
+            "spaceAroundBraces": FormatRules.spaceAroundBraces,
+            "spaceInsideBraces": FormatRules.spaceInsideBraces,
+            "spaceAroundGenerics": FormatRules.spaceAroundGenerics,
+            "spaceInsideGenerics": FormatRules.spaceInsideGenerics,
+            "spaceAroundOperators": FormatRules.spaceAroundOperators,
+            "spaceAroundComments": FormatRules.spaceAroundComments,
+            "spaceInsideComments": FormatRules.spaceInsideComments,
+            "ranges": FormatRules.ranges,
+            "consecutiveSpaces": FormatRules.consecutiveSpaces,
+            "trailingSpace": FormatRules.trailingSpace,
+            "consecutiveBlankLines": FormatRules.consecutiveBlankLines,
+            "blankLinesAtStartOfScope": FormatRules.blankLinesAtStartOfScope,
+            "blankLinesAtEndOfScope": FormatRules.blankLinesAtEndOfScope,
+            "blankLinesBetweenScopes": FormatRules.blankLinesBetweenScopes,
+            "blankLinesAroundMark": FormatRules.blankLinesAroundMark,
+            "linebreakAtEndOfFile": FormatRules.linebreakAtEndOfFile,
+            "indent": FormatRules.indent,
+            "braces": FormatRules.braces,
+            "elseOnSameLine": FormatRules.elseOnSameLine,
+            "trailingCommas": FormatRules.trailingCommas,
+            "todos": FormatRules.todos,
+            "semicolons": FormatRules.semicolons,
+            "linebreaks": FormatRules.linebreaks,
+            "specifiers": FormatRules.specifiers,
+            "trailingClosures": FormatRules.trailingClosures,
+            "redundantParens": FormatRules.redundantParens,
+            "redundantGet": FormatRules.redundantGet,
+            "redundantNilInit": FormatRules.redundantNilInit,
+            "redundantLet": FormatRules.redundantLet,
+            "redundantPattern": FormatRules.redundantPattern,
+            "redundantRawValues": FormatRules.redundantRawValues,
+            "redundantVoidReturnType": FormatRules.redundantVoidReturnType,
+            "redundantReturn": FormatRules.redundantReturn,
+            "redundantBackticks": FormatRules.redundantBackticks,
+            "redundantSelf": FormatRules.redundantSelf,
+            "unusedArguments": FormatRules.unusedArguments,
+            "hoistPatternLet": FormatRules.hoistPatternLet,
+            "wrapArguments": FormatRules.wrapArguments,
+            "void": FormatRules.void,
+            "numberFormatting": FormatRules.numberFormatting,
+            "fileHeader": FormatRules.fileHeader,
+            "redundantInit": FormatRules.redundantInit,
+            "sortedImports": FormatRules.sortedImports,
+            "duplicateImports": FormatRules.duplicateImports,
+            "strongOutlets": FormatRules.strongOutlets,
+            "emptyBraces": FormatRules.emptyBraces,
+            "andOperator": FormatRules.andOperator,
+            "isEmpty": FormatRules.isEmpty,
+            "redundantLetError": FormatRules.redundantLetError,
+        ]
+//        var numberOfMethods: CUnsignedInt = 0
+//        let methods = class_copyMethodList(object_getClass(FormatRules.self), &numberOfMethods)!
+//        for i in 0 ..< Int(numberOfMethods) {
+//            let selector: Selector = method_getName(methods[i])
+//            let name = String(describing: selector)
+//            if name.hasSuffix(":") {
+//                let name = String(name.dropLast())
+//                rules[name] = { formatter in
+//                    formatter.currentRule = name
+//                    FormatRules.perform(selector, with: formatter)
+//                    formatter.currentRule = nil
+//                }
+//            }
+//        }
         return rules
     }()
 
     /// All rules
-    public static let all: [FormatRule] = {
-        Array(byName.keys.sorted().compactMap { byName[$0] })
+    public static let all: [String: FormatRule] = {
+//        Array(byName.keys.sorted().compactMap { byName[$0] })
+        byName
     }()
 
     /// All rules except those specified
-    public static func all(except rules: [String]) -> [FormatRule] {
+    public static func all(except rules: [String]) -> [String: FormatRule] {
         var rulesByName = byName
         for name in rules {
             precondition(byName[name] != nil, "`\(name)` is not a valid rule")
             rulesByName[name] = nil
         }
-        return Array(rulesByName.keys.sorted().compactMap { rulesByName[$0] })
+        return rulesByName
+//        return Array(rulesByName.keys.sorted().compactMap { rulesByName[$0] })
     }
 
     public static func all(named: [String]) -> [FormatRule] {
@@ -91,7 +147,7 @@ extension FormatRules {
     /// * There is space between a closing paren and following identifier
     /// * There is space between a closing paren and following opening brace
     /// * There is no space between a closing paren and following opening square bracket
-    @objc public class func spaceAroundParens(_ formatter: Formatter) {
+    public class func spaceAroundParens(_ formatter: Formatter) {
         func spaceAfter(_ keyword: String, index: Int) -> Bool {
             switch keyword {
             case "@autoclosure":
@@ -176,7 +232,7 @@ extension FormatRules {
     }
 
     /// Remove space immediately inside parens
-    @objc public class func spaceInsideParens(_ formatter: Formatter) {
+    public class func spaceInsideParens(_ formatter: Formatter) {
         formatter.forEach(.startOfScope("(")) { i, _ in
             if formatter.token(at: i + 1)?.isSpace == true,
                 formatter.token(at: i + 2)?.isComment == false {
@@ -198,7 +254,7 @@ extension FormatRules {
     /// * There is no space between an opening bracket and the preceding closing square bracket
     /// * There is space between a closing bracket and following identifier
     /// * There is space between a closing bracket and following opening brace
-    @objc public class func spaceAroundBrackets(_ formatter: Formatter) {
+    public class func spaceAroundBrackets(_ formatter: Formatter) {
         formatter.forEach(.startOfScope("[")) { i, token in
             guard let prevToken = formatter.token(at: i - 1) else {
                 return
@@ -235,7 +291,7 @@ extension FormatRules {
     }
 
     /// Remove space immediately inside square brackets
-    @objc public class func spaceInsideBrackets(_ formatter: Formatter) {
+    public class func spaceInsideBrackets(_ formatter: Formatter) {
         formatter.forEach(.startOfScope("[")) { i, _ in
             if formatter.token(at: i + 1)?.isSpace == true,
                 formatter.token(at: i + 2)?.isComment == false {
@@ -252,7 +308,7 @@ extension FormatRules {
 
     /// Ensure that there is space between an opening brace and the preceding
     /// identifier, and between a closing brace and the following identifier.
-    @objc public class func spaceAroundBraces(_ formatter: Formatter) {
+    public class func spaceAroundBraces(_ formatter: Formatter) {
         formatter.forEach(.startOfScope("{")) { i, _ in
             if let prevToken = formatter.token(at: i - 1) {
                 switch prevToken {
@@ -278,7 +334,7 @@ extension FormatRules {
     }
 
     /// Ensure that there is space immediately inside braces
-    @objc public class func spaceInsideBraces(_ formatter: Formatter) {
+    public class func spaceInsideBraces(_ formatter: Formatter) {
         formatter.forEach(.startOfScope("{")) { i, _ in
             if let nextToken = formatter.token(at: i + 1) {
                 if nextToken.isSpace {
@@ -299,7 +355,7 @@ extension FormatRules {
     }
 
     /// Ensure there is no space between an opening chevron and the preceding identifier
-    @objc public class func spaceAroundGenerics(_ formatter: Formatter) {
+    public class func spaceAroundGenerics(_ formatter: Formatter) {
         formatter.forEach(.startOfScope("<")) { i, _ in
             if formatter.token(at: i - 1)?.isSpace == true,
                 formatter.token(at: i - 2)?.isIdentifierOrKeyword == true {
@@ -309,7 +365,7 @@ extension FormatRules {
     }
 
     /// Remove space immediately inside chevrons
-    @objc public class func spaceInsideGenerics(_ formatter: Formatter) {
+    public class func spaceInsideGenerics(_ formatter: Formatter) {
         formatter.forEach(.startOfScope("<")) { i, _ in
             if formatter.token(at: i + 1)?.isSpace == true {
                 formatter.removeToken(at: i + 1)
@@ -329,7 +385,7 @@ extension FormatRules {
     /// * Delimiters, such as commas and colons, are consistently followed by a
     ///   single space, unless it appears at the end of a line, and is not
     ///   preceded by a space, unless it appears at the beginning of a line.
-    @objc public class func spaceAroundOperators(_ formatter: Formatter) {
+    public class func spaceAroundOperators(_ formatter: Formatter) {
         formatter.forEachToken { i, token in
             switch token {
             case .operator(_, .none) where formatter.token(at: i + 1)?.isSpace == true:
@@ -414,7 +470,7 @@ extension FormatRules {
     }
 
     /// Add space around comments, except at the start or end of a line
-    @objc public class func spaceAroundComments(_ formatter: Formatter) {
+    public class func spaceAroundComments(_ formatter: Formatter) {
         formatter.forEach(.startOfScope("//")) { i, _ in
             if let prevToken = formatter.token(at: i - 1), !prevToken.isSpaceOrLinebreak {
                 formatter.insertToken(.space(" "), at: i)
@@ -444,7 +500,7 @@ extension FormatRules {
 
     /// Add space inside comments, taking care not to mangle headerdoc or
     /// carefully preformatted comments, such as star boxes, etc.
-    @objc public class func spaceInsideComments(_ formatter: Formatter) {
+    public class func spaceInsideComments(_ formatter: Formatter) {
         guard formatter.options.indentComments else { return }
         formatter.forEach(.startOfScope("//")) { i, _ in
             guard let nextToken = formatter.token(at: i + 1),
@@ -484,7 +540,7 @@ extension FormatRules {
     }
 
     /// Adds or removes the space around range operators
-    @objc public class func ranges(_ formatter: Formatter) {
+    public class func ranges(_ formatter: Formatter) {
         formatter.forEach(.rangeOperator) { i, token in
             guard case .operator(_, .infix) = token else { return }
             if !formatter.options.spaceAroundRangeOperators {
@@ -511,7 +567,7 @@ extension FormatRules {
     /// Collapse all consecutive space characters to a single space, except at
     /// the start of a line or inside a comment or string, as these have no semantic
     /// meaning and lead to noise in commits.
-    @objc public class func consecutiveSpaces(_ formatter: Formatter) {
+    public class func consecutiveSpaces(_ formatter: Formatter) {
         formatter.forEach(.space) { i, token in
             if let prevToken = formatter.token(at: i - 1), !prevToken.isLinebreak {
                 switch token {
@@ -533,7 +589,7 @@ extension FormatRules {
 
     /// Remove trailing space from the end of lines, as it has no semantic
     /// meaning and leads to noise in commits.
-    @objc public class func trailingSpace(_ formatter: Formatter) {
+    public class func trailingSpace(_ formatter: Formatter) {
         formatter.forEach(.space) { i, _ in
             guard formatter.token(at: i + 1)?.isLinebreak ?? true else {
                 return
@@ -545,7 +601,7 @@ extension FormatRules {
     }
 
     /// Collapse all consecutive blank lines into a single blank line
-    @objc public class func consecutiveBlankLines(_ formatter: Formatter) {
+    public class func consecutiveBlankLines(_ formatter: Formatter) {
         formatter.forEach(.linebreak) { i, _ in
             guard let prevIndex = formatter.index(of: .nonSpace, before: i, if: { $0.isLinebreak }) else {
                 return
@@ -557,7 +613,7 @@ extension FormatRules {
     }
 
     /// Remove blank lines immediately after an opening brace, bracket, paren or chevron
-    @objc public class func blankLinesAtStartOfScope(_ formatter: Formatter) {
+    public class func blankLinesAtStartOfScope(_ formatter: Formatter) {
         guard formatter.options.removeBlankLines else { return }
         formatter.forEach(.startOfScope) { i, token in
             guard ["{", "(", "[", "<"].contains(token.string),
@@ -588,7 +644,7 @@ extension FormatRules {
 
     /// Remove blank lines immediately before a closing brace, bracket, paren or chevron
     /// unless it's followed by more code on the same line (e.g. } else { )
-    @objc public class func blankLinesAtEndOfScope(_ formatter: Formatter) {
+    public class func blankLinesAtEndOfScope(_ formatter: Formatter) {
         guard formatter.options.removeBlankLines else { return }
         formatter.forEach(.endOfScope) { i, token in
             guard ["}", ")", "]", ">"].contains(token.string),
@@ -622,7 +678,7 @@ extension FormatRules {
     }
 
     /// Adds a blank line immediately after a closing brace, unless followed by another closing brace
-    @objc public class func blankLinesBetweenScopes(_ formatter: Formatter) {
+    public class func blankLinesBetweenScopes(_ formatter: Formatter) {
         guard formatter.options.insertBlankLines else { return }
         var spaceableScopeStack = [true]
         var isSpaceableScopeType = false
@@ -687,7 +743,7 @@ extension FormatRules {
     }
 
     /// Adds a blank line around MARK: comments
-    @objc public class func blankLinesAroundMark(_ formatter: Formatter) {
+    public class func blankLinesAroundMark(_ formatter: Formatter) {
         guard formatter.options.insertBlankLines else { return }
         formatter.forEachToken { i, token in
             guard case let .commentBody(comment) = token, comment.hasPrefix("MARK:"),
@@ -708,7 +764,7 @@ extension FormatRules {
 
     /// Always end file with a linebreak, to avoid incompatibility with certain unix tools:
     /// http://stackoverflow.com/questions/2287967/why-is-it-recommended-to-have-empty-line-in-the-end-of-file
-    @objc public class func linebreakAtEndOfFile(_ formatter: Formatter) {
+    public class func linebreakAtEndOfFile(_ formatter: Formatter) {
         guard !formatter.options.fragment else { return }
         var wasLinebreak = true
         formatter.forEachToken { _, token in
@@ -729,7 +785,7 @@ extension FormatRules {
     /// Indent code according to standard scope indenting rules.
     /// The type (tab or space) and level (2 spaces, 4 spaces, etc.) of the
     /// indenting can be configured with the `options` parameter of the formatter.
-    @objc public class func indent(_ formatter: Formatter) {
+    public class func indent(_ formatter: Formatter) {
         var scopeStack: [Token] = []
         var scopeStartLineIndexes: [Int] = []
         var lastNonSpaceOrLinebreakIndex = -1
@@ -1166,7 +1222,7 @@ extension FormatRules {
     }
 
     // Implement brace-wrapping rules
-    @objc public class func braces(_ formatter: Formatter) {
+    public class func braces(_ formatter: Formatter) {
         formatter.forEach(.startOfScope("{")) { i, token in
             // Check this isn't an inline block
             guard let nextLinebreakIndex = formatter.index(of: .linebreak, after: i),
@@ -1225,7 +1281,7 @@ extension FormatRules {
     /// Ensure that an `else` statement following `if { ... }` appears on the same line
     /// as the closing brace. This has no effect on the `else` part of a `guard` statement.
     /// Also applies to `catch` after `try` and `while` after `repeat`.
-    @objc public class func elseOnSameLine(_ formatter: Formatter) {
+    public class func elseOnSameLine(_ formatter: Formatter) {
         var closingBraceIndex: Int?
         formatter.forEachToken { i, token in
             switch token {
@@ -1265,7 +1321,7 @@ extension FormatRules {
 
     /// Ensure that the last item in a multi-line array literal is followed by a comma.
     /// This is useful for preventing noise in commits when items are added to end of array.
-    @objc public class func trailingCommas(_ formatter: Formatter) {
+    public class func trailingCommas(_ formatter: Formatter) {
         formatter.forEach(.endOfScope("]")) { i, _ in
             guard let prevTokenIndex = formatter.index(of: .nonSpaceOrComment, before: i) else { return }
             if let startIndex = formatter.index(of: .startOfScope("["), before: i),
@@ -1310,7 +1366,7 @@ extension FormatRules {
     }
 
     /// Ensure that TODO, MARK and FIXME comments are followed by a : as required
-    @objc public class func todos(_ formatter: Formatter) {
+    public class func todos(_ formatter: Formatter) {
         formatter.forEachToken { i, token in
             guard case var .commentBody(string) = token else {
                 return
@@ -1339,7 +1395,7 @@ extension FormatRules {
     }
 
     /// Remove semicolons, except where doing so would change the meaning of the code
-    @objc public class func semicolons(_ formatter: Formatter) {
+    public class func semicolons(_ formatter: Formatter) {
         formatter.forEach(.delimiter(";")) { i, _ in
             if let nextToken = formatter.next(.nonSpaceOrCommentOrLinebreak, after: i) {
                 let prevToken = formatter.last(.nonSpaceOrCommentOrLinebreak, before: i)
@@ -1367,14 +1423,14 @@ extension FormatRules {
     }
 
     /// Standardise linebreak characters as whatever is specified in the options (\n by default)
-    @objc public class func linebreaks(_ formatter: Formatter) {
+    public class func linebreaks(_ formatter: Formatter) {
         formatter.forEach(.linebreak) { i, _ in
             formatter.replaceToken(at: i, with: .linebreak(formatter.options.linebreak))
         }
     }
 
     /// Standardise the order of property specifiers
-    @objc public class func specifiers(_ formatter: Formatter) {
+    public class func specifiers(_ formatter: Formatter) {
         let order = [
             "private", "fileprivate", "internal", "public", "open",
             "private(set)", "fileprivate(set)", "internal(set)", "public(set)",
@@ -1450,7 +1506,7 @@ extension FormatRules {
     /// Convert closure arguments to trailing closure syntax where possible
     /// NOTE: Parens around trailing closures are sometimes required for disambiguation.
     /// SwiftFormat can't detect those cases, so `trailingClosures` is disabled by default
-    @objc public class func trailingClosures(_ formatter: Formatter) {
+    public class func trailingClosures(_ formatter: Formatter) {
         func removeParen(at index: Int) {
             if formatter.token(at: index - 1)?.isSpace == true {
                 if formatter.token(at: index + 1)?.isSpace == true {
@@ -1520,7 +1576,7 @@ extension FormatRules {
     }
 
     /// Remove redundant parens around the arguments for loops, if statements, closures, etc.
-    @objc public class func redundantParens(_ formatter: Formatter) {
+    public class func redundantParens(_ formatter: Formatter) {
         func tokenOutsideParenRequiresSpacing(at index: Int) -> Bool {
             guard let token = formatter.token(at: index) else { return false }
             switch token {
@@ -1701,7 +1757,7 @@ extension FormatRules {
     }
 
     /// Remove redundant `get {}` clause inside read-only computed property
-    @objc public class func redundantGet(_ formatter: Formatter) {
+    public class func redundantGet(_ formatter: Formatter) {
         formatter.forEach(.identifier("get")) { i, _ in
             if let previousIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: i, if: {
                 $0 == .startOfScope("{") }), let prevKeyword = formatter.last(.keyword, before: previousIndex),
@@ -1718,7 +1774,7 @@ extension FormatRules {
     }
 
     /// Remove redundant `= nil` initialization for Optional properties
-    @objc public class func redundantNilInit(_ formatter: Formatter) {
+    public class func redundantNilInit(_ formatter: Formatter) {
         func search(from index: Int) {
             if let optionalIndex = formatter.index(of: .unwrapOperator, after: index) {
                 if let terminatorIndex = formatter.index(of: .endOfStatement, after: index),
@@ -1806,7 +1862,7 @@ extension FormatRules {
     }
 
     /// Remove redundant let/var for unnamed variables
-    @objc public class func redundantLet(_ formatter: Formatter) {
+    public class func redundantLet(_ formatter: Formatter) {
         formatter.forEach(.identifier("_")) { i, _ in
             guard formatter.next(.nonSpaceOrCommentOrLinebreak, after: i) != .delimiter(":"),
                 let prevIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: i, if: {
@@ -1831,7 +1887,7 @@ extension FormatRules {
     }
 
     /// Remove redundant pattern in case statements
-    @objc public class func redundantPattern(_ formatter: Formatter) {
+    public class func redundantPattern(_ formatter: Formatter) {
         func redundantBindings(inRange range: Range<Int>) -> Bool {
             var isEmpty = true
             for token in formatter.tokens[range.lowerBound ..< range.upperBound] {
@@ -1875,7 +1931,7 @@ extension FormatRules {
     }
 
     /// Remove redundant raw string values for case statements
-    @objc public class func redundantRawValues(_ formatter: Formatter) {
+    public class func redundantRawValues(_ formatter: Formatter) {
         formatter.forEach(.keyword("enum")) { i, _ in
             guard let nameIndex = formatter.index(
                 of: .nonSpaceOrCommentOrLinebreak, after: i, if: { $0.isIdentifier }
@@ -1912,7 +1968,7 @@ extension FormatRules {
     }
 
     /// Remove redundant void return values for function declarations
-    @objc public class func redundantVoidReturnType(_ formatter: Formatter) {
+    public class func redundantVoidReturnType(_ formatter: Formatter) {
         formatter.forEach(.operator("->", .infix)) { i, _ in
             guard var endIndex = formatter.index(of: .nonSpace, after: i) else { return }
             switch formatter.tokens[endIndex] {
@@ -1949,7 +2005,7 @@ extension FormatRules {
     }
 
     /// Remove redundant return keyword from single-line closures
-    @objc public class func redundantReturn(_ formatter: Formatter) {
+    public class func redundantReturn(_ formatter: Formatter) {
         formatter.forEach(.startOfScope("{")) { i, _ in
             guard formatter.last(.nonSpaceOrCommentOrLinebreak, before: i) != .identifier("get") else { return }
             if formatter.last(.nonSpaceOrCommentOrLinebreak, before: i) != .operator("=", .infix),
@@ -1986,7 +2042,7 @@ extension FormatRules {
     }
 
     /// Remove redundant backticks around non-keywords, or in places where keywords don't need escaping
-    @objc public class func redundantBackticks(_ formatter: Formatter) {
+    public class func redundantBackticks(_ formatter: Formatter) {
         formatter.forEach(.identifier) { i, token in
             guard token.string.first == "`" else { return }
             let unescaped = token.unescaped()
@@ -2040,7 +2096,7 @@ extension FormatRules {
 
     /// Remove redundant self keyword
     // TODO: restructure this to use forEachToken to avoid exposing processCommentBody mechanism
-    @objc public class func redundantSelf(_ formatter: Formatter) {
+    public class func redundantSelf(_ formatter: Formatter) {
         var typeStack = [String]()
         var membersByType = [String: Set<String>]()
         var classMembersByType = [String: Set<String>]()
@@ -2549,7 +2605,7 @@ extension FormatRules {
     }
 
     /// Replace unused arguments with an underscore
-    @objc public class func unusedArguments(_ formatter: Formatter) {
+    public class func unusedArguments(_ formatter: Formatter) {
         func removeUsed<T>(from argNames: inout [String], with associatedData: inout [T], in range: Range<Int>) {
             for i in range.lowerBound ..< range.upperBound {
                 let token = formatter.tokens[i]
@@ -2709,7 +2765,7 @@ extension FormatRules {
     }
 
     /// Move `let` and `var` inside patterns to the beginning
-    @objc public class func hoistPatternLet(_ formatter: Formatter) {
+    public class func hoistPatternLet(_ formatter: Formatter) {
         func indicesOf(_ keyword: String, in range: CountableRange<Int>) -> [Int]? {
             var indices = [Int]()
             var keywordFound = false, identifierFound = false
@@ -2840,7 +2896,7 @@ extension FormatRules {
     }
 
     /// Normalize argument wrapping style
-    @objc public class func wrapArguments(_ formatter: Formatter) {
+    public class func wrapArguments(_ formatter: Formatter) {
         func removeLinebreakBeforeClosingBrace(at closingBraceIndex: inout Int) {
             if var lastIndex = formatter.index(of: .nonSpace, before: closingBraceIndex, if: {
                 $0.isLinebreak
@@ -2995,7 +3051,7 @@ extension FormatRules {
     }
 
     /// Normalize the use of void in closure arguments and return values
-    @objc public class func void(_ formatter: Formatter) {
+    public class func void(_ formatter: Formatter) {
         func isArgumentToken(at index: Int) -> Bool {
             if let nextToken = formatter.next(.nonSpaceOrCommentOrLinebreak, after: index) {
                 if [.operator("->", .infix), .keyword("throws"), .keyword("rethrows")].contains(nextToken) {
@@ -3065,7 +3121,7 @@ extension FormatRules {
     }
 
     /// Standardize formatting of numeric literals
-    @objc public class func numberFormatting(_ formatter: Formatter) {
+    public class func numberFormatting(_ formatter: Formatter) {
         func applyGrouping(_ grouping: Grouping, to number: inout String) {
             switch grouping {
             case .none, .group:
@@ -3150,7 +3206,7 @@ extension FormatRules {
     }
 
     /// Strip header comments from the file
-    @objc public class func fileHeader(_ formatter: Formatter) {
+    public class func fileHeader(_ formatter: Formatter) {
         guard !formatter.options.fragment else { return }
         let header: String
         switch formatter.options.fileHeader {
@@ -3219,7 +3275,7 @@ extension FormatRules {
     }
 
     /// Strip redundant `.init` from type instantiations
-    @objc public class func redundantInit(_ formatter: Formatter) {
+    public class func redundantInit(_ formatter: Formatter) {
         formatter.forEach(.identifier("init")) { i, _ in
             guard let dotIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: i, if: {
                 $0 == .operator(".", .infix)
@@ -3237,7 +3293,7 @@ extension FormatRules {
     }
 
     /// Sort import statements
-    @objc public class func sortedImports(_ formatter: Formatter) {
+    public class func sortedImports(_ formatter: Formatter) {
         func sortRanges(_ ranges: [ImportRange]) -> [ImportRange] {
             if case .alphabetized = formatter.options.importGrouping {
                 return ranges.sorted { $0.0 < $1.0 }
@@ -3276,7 +3332,7 @@ extension FormatRules {
     }
 
     /// Remove duplicate import statements
-    @objc public class func duplicateImports(_ formatter: Formatter) {
+    public class func duplicateImports(_ formatter: Formatter) {
         var importStack = parseImports(formatter)
         while var importRanges = importStack.popLast() {
             while let range = importRanges.popLast() {
@@ -3288,7 +3344,7 @@ extension FormatRules {
     }
 
     /// Strip unnecessary `weak` from @IBOutlet properties (except delegates and datasources)
-    @objc public class func strongOutlets(_ formatter: Formatter) {
+    public class func strongOutlets(_ formatter: Formatter) {
         formatter.forEach(.keyword("@IBOutlet")) { i, _ in
             guard let varIndex = formatter.index(of: .keyword("var"), after: i),
                 let weakIndex = (i ..< varIndex).first(where: { formatter.tokens[$0] == .identifier("weak") }),
@@ -3309,7 +3365,7 @@ extension FormatRules {
     }
 
     /// Remove white-space between empty braces
-    @objc public class func emptyBraces(_ formatter: Formatter) {
+    public class func emptyBraces(_ formatter: Formatter) {
         formatter.forEach(.startOfScope("{")) { i, _ in
             if let closingIndex = formatter.index(of: .nonSpaceOrLinebreak, after: i, if: {
                 $0 == .endOfScope("}")
@@ -3320,7 +3376,7 @@ extension FormatRules {
     }
 
     /// Replace the `&&` operator with `,` where applicable
-    @objc public class func andOperator(_ formatter: Formatter) {
+    public class func andOperator(_ formatter: Formatter) {
         formatter.forEachToken { i, token in
             guard [.keyword("if"), .keyword("guard"), .keyword("while")].contains(token),
                 var endIndex = formatter.index(of: .startOfScope("{"), after: i) else {
@@ -3367,7 +3423,7 @@ extension FormatRules {
     }
 
     /// Replace count == 0 with isEmpty
-    @objc public class func isEmpty(_ formatter: Formatter) {
+    public class func isEmpty(_ formatter: Formatter) {
         formatter.forEach(.identifier("count")) { i, _ in
             guard let dotIndex = formatter.index(of: .nonSpaceOrLinebreak, before: i, if: {
                 $0.isOperator(".")
@@ -3443,7 +3499,7 @@ extension FormatRules {
     }
 
     /// Remove redundant `let error` from `catch` statements
-    @objc public class func redundantLetError(_ formatter: Formatter) {
+    public class func redundantLetError(_ formatter: Formatter) {
         formatter.forEach(.keyword("catch")) { i, _ in
             if let letIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: i, if: {
                 $0 == .keyword("let")

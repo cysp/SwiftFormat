@@ -559,7 +559,7 @@ func format(_ source: String, options: Options, verbose: Bool) throws -> String 
     // Get rules
     let rulesByName = FormatRules.byName
     let ruleNames = Array(options.rules ?? allRules.subtracting(FormatRules.disabledByDefault)).sorted()
-    let rules = ruleNames.compactMap { rulesByName[$0] }
+    let namedRules = Dictionary(uniqueKeysWithValues: ruleNames.compactMap { name in rulesByName[name].map({ (name, $0) }) })
     var rulesApplied = Set<String>()
     let callback: ((Int, [Token]) -> Void)? = verbose ? { i, updatedTokens in
         if updatedTokens != tokens {
@@ -570,7 +570,7 @@ func format(_ source: String, options: Options, verbose: Bool) throws -> String 
 
     // Apply rules
     let formatOptions = options.formatOptions ?? .default
-    tokens = try applyRules(rules, to: tokens, with: formatOptions, callback: callback)
+    tokens = try applyRules(namedRules, to: tokens, with: formatOptions, callback: callback)
 
     // Display info
     if verbose {

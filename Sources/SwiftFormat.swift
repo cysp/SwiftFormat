@@ -283,7 +283,7 @@ public func sourceCode(for tokens: [Token]) -> String {
 
 /// Apply specified rules to a token array with optional callback
 /// Useful for perfoming additional logic after each rule is applied
-public func applyRules(_ rules: [FormatRule],
+public func applyRules(_ rules: [String: FormatRule],
                        to originalTokens: [Token],
                        with options: FormatOptions,
                        callback: ((Int, [Token]) -> Void)? = nil) throws -> [Token] {
@@ -299,7 +299,9 @@ public func applyRules(_ rules: [FormatRule],
     for _ in 0 ..< 10 {
         let formatter = Formatter(tokens, options: options)
         for (i, rule) in rules.enumerated() {
-            rule(formatter)
+            formatter.currentRule = rule.0
+            rule.1(formatter)
+            formatter.currentRule = nil
             callback?(i, formatter.tokens)
         }
         if tokens == formatter.tokens {
@@ -314,14 +316,14 @@ public func applyRules(_ rules: [FormatRule],
 /// Format a pre-parsed token array
 /// Returns the formatted token array, and the number of edits made
 public func format(_ tokens: [Token],
-                   rules: [FormatRule] = FormatRules.default,
+                   rules: [String: FormatRule] = FormatRules.default,
                    options: FormatOptions = .default) throws -> [Token] {
     return try applyRules(rules, to: tokens, with: options)
 }
 
 /// Format code with specified rules and options
 public func format(_ source: String,
-                   rules: [FormatRule] = FormatRules.default,
+                   rules: [String: FormatRule] = FormatRules.default,
                    options: FormatOptions = .default) throws -> String {
     return sourceCode(for: try format(tokenize(source), rules: rules, options: options))
 }
